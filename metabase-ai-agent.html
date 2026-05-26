@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Resume DB — Metabase AI Agent</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#0a0b0d;--bg2:#111215;--bg3:#18191d;--bg4:#1f2025;--bg5:#26282e;
+  --border:rgba(255,255,255,0.06);--border2:rgba(255,255,255,0.11);
+  --text:#dde1e9;--text2:#8b909e;--text3:#454850;
+  --green:#3dd68c;--green2:#2ab874;--gd:rgba(61,214,140,0.10);--gd2:rgba(61,214,140,0.04);
+  --blue:#5b9cf6;--bd:rgba(91,156,246,0.10);
+  --amber:#f0b429;--ad:rgba(240,180,41,0.10);
+  --red:#e05252;
+  --lw:68%;
+  --fh:'DM Sans',sans-serif;--fm:'JetBrains Mono',monospace;
+  --r:8px;--rs:5px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{
+  height:100%;
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
+  font-family:var(--fh);
+  overflow:hidden;
+}
+
+/* ── layout ── */
+.shell{display:grid;grid-template-rows:44px 1fr;height:100vh;max-height:100vh;overflow:hidden}
+.topbar{display:flex;align-items:center;gap:10px;padding:0 14px;background:var(--bg2);border-bottom:1px solid var(--border);z-index:10}
+.logo{font-size:13px;font-weight:700;letter-spacing:-.02em;color:var(--green);white-space:nowrap}
+.logo span{color:var(--text3);font-weight:400}
+.sep{width:1px;height:18px;background:var(--border2);flex-shrink:0}
+.url-wrap{display:flex;align-items:center;gap:6px;flex:1;max-width:380px}
+.url-lbl{font-size:11px;color:var(--text3);font-family:var(--fm);white-space:nowrap}
+.url-input{flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:var(--rs);padding:4px 9px;font-family:var(--fm);font-size:11px;color:var(--text2);outline:none;transition:border .15s}
+.url-input:focus{border-color:var(--green);color:var(--text)}
+.tbtn{padding:4px 11px;border-radius:var(--rs);font-family:var(--fh);font-size:11px;font-weight:600;cursor:pointer;transition:all .15s;white-space:nowrap;border:1px solid}
+.tbtn-green{background:var(--gd);border-color:var(--green);color:var(--green)}
+.tbtn-green:hover{background:var(--green);color:#000}
+.status{margin-left:auto;display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text3);font-family:var(--fm)}
+.sdot{width:5px;height:5px;border-radius:50%;background:var(--text3)}
+.sdot.on{background:var(--green);box-shadow:0 0 5px var(--green)}
+
+.main{
+  display:grid;
+  grid-template-columns:minmax(340px,var(--lw)) min-content minmax(0,1fr);
+  overflow:hidden;
+  height:calc(100vh - 44px);
+  min-height:0;
+}
+
+.main > *{
+  min-height:0;
+}
+
+/* ── metabase panel ── */
+.mb-panel{display:flex;flex-direction:column;border-right:1px solid var(--border);overflow:hidden;min-height:0}
+.mb-bar{padding:7px 14px;background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;flex-shrink:0}
+.mb-bar-title{font-size:11px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--text3)}
+.mb-wrap{flex:1;position:relative;background:var(--bg3);min-height:0}
+iframe{width:100%;height:100%;border:none}
+.mb-ph{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:40px}
+.mb-ph-title{font-size:16px;font-weight:700;color:var(--text2)}
+.mb-ph-sub{font-size:12px;color:var(--text3);text-align:center;line-height:1.7;max-width:320px;font-family:var(--fm)}
+.mb-fail{display:none;position:absolute;left:16px;right:16px;bottom:16px;background:rgba(224,82,82,.07);border:1px solid rgba(224,82,82,.2);border-radius:var(--r);padding:10px 12px;color:#ffaaaa;font-size:11px;font-family:var(--fm);line-height:1.6}
+
+/* ── divider ── */
+.divider{background:var(--bg2);border-left:1px solid var(--border);border-right:1px solid var(--border);cursor:col-resize;position:relative;z-index:5;transition:background .15s}
+.divider:hover{background:var(--gd)}
+.divider::after{content:'';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:2px;height:36px;border-radius:99px;background:var(--border2)}
+
+/* ── agent ── */
+.agent{
+  display:flex;
+  flex-direction:column;
+  background:var(--bg2);
+  overflow:hidden;
+  min-width:300px;
+  min-height:0;
+  height:calc(100vh - 44px);
+}
+
+.a-header{padding:10px 13px 9px;border-bottom:1px solid var(--border);flex-shrink:0}
+.a-top{display:flex;align-items:center;gap:7px;margin-bottom:7px}
+.a-name{font-size:13px;font-weight:700;letter-spacing:-.01em;color:var(--text)}
+.a-badge{font-size:10px;padding:2px 7px;border-radius:20px;background:var(--gd);color:var(--green);border:1px solid rgba(61,214,140,.25);font-family:var(--fm);margin-left:auto}
+.a-pills{display:flex;flex-wrap:wrap;gap:4px}
+.pill{font-size:10px;font-family:var(--fm);padding:2px 7px;background:var(--bg4);border:1px solid var(--border);border-radius:20px;color:var(--text3)}
+.pill.on{color:var(--blue);border-color:rgba(91,156,246,.25);background:var(--bd)}
+
+/* ── modes ── */
+.modes{display:flex;gap:3px;padding:7px 11px;border-bottom:1px solid var(--border);flex-shrink:0}
+.mtab{flex:1;padding:4px 2px;font-size:10px;font-family:var(--fm);font-weight:500;text-align:center;border:1px solid var(--border);border-radius:var(--rs);cursor:pointer;color:var(--text3);background:transparent;transition:all .15s}
+.mtab:hover{border-color:var(--border2);color:var(--text2)}
+.mtab.active{background:var(--gd);border-color:rgba(61,214,140,.35);color:var(--green)}
+
+/* ── quick prompts ── */
+.quick{padding:8px 11px;border-bottom:1px solid var(--border);flex-shrink:0}
+.qlbl{font-size:10px;font-family:var(--fm);color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px}
+.qgrid{display:flex;flex-wrap:wrap;gap:4px}
+.chip{font-size:10px;padding:3px 8px;background:var(--bg3);border:1px solid var(--border);border-radius:20px;color:var(--text2);cursor:pointer;transition:all .15s;font-family:var(--fm)}
+.chip:hover{border-color:var(--green);color:var(--green);background:var(--gd2)}
+
+/* ── messages — FINAL FIX ── */
+.msgs{
+  flex:1 1 auto;
+  min-height:0;
+  overflow-y:auto;
+  overflow-x:hidden;
+  padding:11px;
+  display:flex;
+  flex-direction:column;
+  gap:9px;
+  scroll-behavior:smooth;
+  overscroll-behavior:contain;
+}
+
+.msgs::-webkit-scrollbar{
+  width:6px;
+}
+
+.msgs::-webkit-scrollbar-thumb{
+  background:#2a2d35;
+  border-radius:10px;
+}
+
+.msgs::-webkit-scrollbar-thumb:hover{
+  background:#3dd68c;
+}
+.msgs::-webkit-scrollbar{width:3px}
+.msgs::-webkit-scrollbar-thumb{background:var(--bg5);border-radius:2px}
+.msgs::-webkit-scrollbar-thumb:hover{background:var(--border2)}
+
+.mw{
+  display:flex;
+  flex-direction:column;
+  gap:2px;
+  width:100%;
+  min-width:0;
+}
+.mw.user{align-items:flex-end}
+.mw.agent{align-items:flex-start}
+.mlbl{font-size:10px;font-family:var(--fm);color:var(--text3);padding:0 3px}
+.bub{
+  padding:9px 12px;
+  border-radius:var(--r);
+  font-size:12px;
+  line-height:1.65;
+  max-width:100%;
+  width:100%;
+  overflow:hidden;
+  word-break:break-word;
+  box-sizing:border-box;
+}
+.mw.user .bub{background:var(--gd);border:1px solid rgba(61,214,140,.18);color:var(--text);border-radius:var(--r) var(--r) 2px var(--r)}
+.mw.agent .bub{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r) var(--r) var(--r) 2px}
+.bub pre{
+  background:var(--bg);
+  border:1px solid var(--border2);
+  border-radius:var(--rs);
+  padding:9px 11px;
+  margin:7px 0 2px;
+  overflow-x:auto;
+  overflow-y:hidden;
+  max-width:100%;
+  width:100%;
+  font-size:11px;
+  font-family:var(--fm);
+  color:var(--green);
+  line-height:1.6;
+  white-space:pre-wrap;
+  word-break:break-word;
+  box-sizing:border-box;
+}
+.bub code{font-family:var(--fm);font-size:11px;background:var(--bg);border:1px solid var(--border);border-radius:3px;padding:1px 4px;color:var(--blue)}
+.bub strong{color:var(--amber);font-weight:600}
+.bub h4{font-size:10px;font-weight:700;color:var(--green);margin:9px 0 3px;letter-spacing:.05em;text-transform:uppercase}
+.bub ul,.bub ol{padding-left:14px;margin:3px 0}
+.bub li{margin:2px 0;font-size:11.5px}
+.cpybtn{display:inline-block;margin-top:2px;padding:2px 8px;font-size:10px;font-family:var(--fm);background:var(--bg4);border:1px solid var(--border);border-radius:4px;color:var(--text3);cursor:pointer;transition:all .15s}
+.cpybtn:hover{border-color:var(--green);color:var(--green)}
+
+/* ── typing ── */
+.tw{display:flex;flex-direction:column;gap:2px;align-items:flex-start}
+.tbub{padding:9px 13px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r) var(--r) var(--r) 2px;display:flex;gap:4px;align-items:center}
+.dot{width:4px;height:4px;border-radius:50%;background:var(--text3);animation:bob .9s infinite}
+.dot:nth-child(2){animation-delay:.2s}
+.dot:nth-child(3){animation-delay:.4s}
+@keyframes bob{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-4px)}}
+
+/* ── input ── */
+.iarea{padding:9px 11px;border-top:1px solid var(--border);background:var(--bg2);flex-shrink:0}
+.irow{display:flex;gap:6px;align-items:flex-end}
+.ibox{flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:8px 11px;font-family:var(--fh);font-size:12px;color:var(--text);resize:none;outline:none;min-height:38px;max-height:90px;line-height:1.5;transition:border .15s}
+.ibox:focus{border-color:rgba(61,214,140,.4)}
+.ibox::placeholder{color:var(--text3)}
+.sbtn{padding:8px 12px;background:var(--green);color:#000;border:none;border-radius:var(--r);cursor:pointer;font-family:var(--fh);font-size:12px;font-weight:700;transition:all .15s;white-space:nowrap;flex-shrink:0}
+.sbtn:hover{background:var(--green2)}
+.sbtn:disabled{opacity:.3;cursor:not-allowed}
+.ihint{font-size:10px;font-family:var(--fm);color:var(--text3);margin-top:4px}
+
+/* ── key notice (no modal) ── */
+.key-notice{background:var(--ad);border:1px solid rgba(240,180,41,.2);border-radius:var(--r);padding:8px 11px;font-size:11px;font-family:var(--fm);color:var(--amber);line-height:1.6;margin:0 11px 8px;flex-shrink:0;display:none}
+.key-notice a{color:var(--green);text-decoration:none}
+.key-row{display:flex;gap:5px;margin-top:6px}
+.key-inp{flex:1;background:var(--bg3);border:1px solid var(--border2);border-radius:var(--rs);padding:5px 9px;font-family:var(--fm);font-size:11px;color:var(--text);outline:none}
+.key-inp:focus{border-color:var(--green)}
+.key-save{padding:5px 12px;background:var(--green);color:#000;border:none;border-radius:var(--rs);font-family:var(--fh);font-size:11px;font-weight:700;cursor:pointer}
+</style>
+</head>
+<body>
+<div class="shell">
+  <!-- TOP BAR -->
+  <div class="topbar">
+    <span class="logo">ResumeDB <span>/ Analytics</span></span>
+    <div class="sep"></div>
+    <div class="url-wrap">
+      <span class="url-lbl">url://</span>
+      <input class="url-input" id="mbUrl" type="text" value="https://anandtannak-metabase.hf.space/" />
+      <button class="tbtn tbtn-green" onclick="loadMB()">Load</button>
+    </div>
+    <div class="status">
+      <div class="sdot" id="sdot"></div>
+      <span id="stxt">no key</span>
+    </div>
+  </div>
+
+  <div class="main">
+    <!-- LEFT: Metabase -->
+    <div class="mb-panel">
+      <div class="mb-bar">
+        <span class="mb-bar-title">Dashboard</span>
+      </div>
+      <div class="mb-wrap">
+        <iframe id="mbFrame" style="display:none" src=""></iframe>
+        <div class="mb-ph" id="mbPh">
+          <div class="mb-ph-title">Metabase Dashboard</div>
+          <div class="mb-ph-sub">Click Load to open your deployed Metabase at<br>anandtannak-metabase.hf.space</div>
+        </div>
+        <div class="mb-fail" id="mbFail">If the frame is blank, Metabase may block iframe embedding. Open the URL in a new tab to log in first, then reload here.</div>
+      </div>
+    </div>
+
+    <div class="divider" id="splitter"></div>
+
+    <!-- RIGHT: Agent -->
+    <div class="agent">
+      <div class="a-header">
+        <div class="a-top">
+          <span class="a-name">AI Agent</span>
+          <span class="a-badge">Gemini Free</span>
+        </div>
+        <div class="a-pills">
+          <span class="pill on">users</span><span class="pill on">resumes</span><span class="pill on">skills</span>
+          <span class="pill on">projects</span><span class="pill on">certifications</span>
+          <span class="pill on">education</span><span class="pill on">experience</span>
+        </div>
+      </div>
+
+      <div class="modes">
+        <button class="mtab active" data-m="auto">auto</button>
+        <button class="mtab" data-m="sql">sql</button>
+        <button class="mtab" data-m="chart">chart</button>
+        <button class="mtab" data-m="dashboard">dashboard</button>
+        <button class="mtab" data-m="tutor">tutor</button>
+        <button class="mtab" data-m="fix">fix bug</button>
+      </div>
+
+      <div class="quick">
+        <div class="qlbl">Quick prompts</div>
+        <div class="qgrid">
+          <span class="chip" data-q="Fix my date filter bug. My skills, projects, certifications and education tables don't have created_at. Show me the correct SQL using JOIN with resumes table and explain the Field Filter setup in Metabase.">date filter fix</span>
+          <span class="chip" data-q="Write SQL to count total skills per user ordered by most skills first.">skills per user</span>
+          <span class="chip" data-q="Which users created more than 2 resumes? Write the SQL.">power users</span>
+          <span class="chip" data-q="How do I create a bar chart in Metabase showing resume count by template_name? Give me step by step.">bar chart guide</span>
+          <span class="chip" data-q="Explain SQL JOINs using my users and resumes tables. Show examples.">explain JOINs</span>
+          <span class="chip" data-q="Find users who registered but never created a resume. Write the SQL.">inactive users</span>
+          <span class="chip" data-q="What are the most popular skill names across all resumes? Write SQL.">top skills</span>
+          <span class="chip" data-q="What should I learn next after JOINs? Give me a learning roadmap for SQL and Metabase.">what to learn next</span>
+        </div>
+      </div>
+
+      <!-- Inline key notice (shown when no key) -->
+      <div class="key-notice" id="keyNotice">
+        No Groq API key set. Get a free key from <a href="https://console.groq.com" target="_blank">console.groq.com</a> and paste it below.
+        <div class="key-row">
+          <input class="key-inp" id="keyInp" type="password" placeholder="gsk_..." />
+          <button class="key-save" onclick="saveKey()">Save</button>
+        </div>
+      </div>
+
+      <div class="msgs" id="msgs"></div>
+
+      <div class="iarea">
+        <div class="irow">
+          <textarea class="ibox" id="inp" placeholder="Ask anything — SQL, charts, filters, dashboard design..." rows="1" onkeydown="onKey(event)"></textarea>
+          <button class="sbtn" id="sbtn" onclick="send()">Send</button>
+        </div>
+        <div class="ihint">Enter = send &nbsp;·&nbsp; Shift+Enter = new line &nbsp;·&nbsp; mode: <span id="mlbl">auto</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── CONFIG: paste your Groq key here (free at console.groq.com) ──
+const HARDCODED_KEY = ''; // paste your gsk_... key here 
+
+const SYSTEM = `You are a Metabase and SQL expert assistant helping a developer learn analytics with the "Resume Builder" project.
+
+DATABASE "Resume DB" — 7 tables on Aiven MySQL, connected to Metabase at https://anandtannak-metabase.hf.space:
+
+users: id, name, email, password, role, created_at, reset_token, reset_token_expiry
+resumes: id, user_id, title, summary, full_name, professional_title, email, phone, location, linkedin, website, nationality, date_of_birth, template_name, template_style, created_at, updated_at
+skills: id, resume_id, skill_name, level
+projects: id, resume_id
+certifications: id, resume_id, title, organization, issue_year
+education: id, resume_id
+experience: id, resume_id
+
+CRITICAL RULES:
+- skills, projects, certifications, education, experience have NO created_at column
+- To filter by date on these tables, always JOIN resumes table
+- Date filter SQL pattern:
+  SELECT COUNT(*) FROM skills s JOIN resumes r ON s.resume_id = r.id [[WHERE {{created_at}}]]
+  Variable: name=created_at, type=Field Filter, field=resumes.created_at
+- Always use MySQL syntax (DATE_FORMAT not TO_CHAR, use backticks for reserved words)
+
+CURRENT DASHBOARD (already built):
+- 6 KPI cards: total_users(23), total_resumes(61), total_skills(47), total_projects(28), total_certificates(26), total_education(21)
+- User Growth Over Time chart (line)
+- Resume Creation Trend chart (line)
+
+USER PROGRESS:
+Knows: Metabase dashboards, KPI cards, charts, date filters, click behavior, Field Filter, [[WHERE {{var}}]] syntax, SELECT/FROM/COUNT/GROUP BY/ORDER BY/JOINs.
+Next to learn: WHERE/HAVING, subqueries, advanced chart types, BI concepts.
+
+RESPONSE FORMAT:
+- SQL queries: always in triple backticks with sql tag, ready to paste into Metabase
+- Metabase steps: short numbered list
+- Keep explanations simple — user is learning
+- End with: concept used + what to try next
+- For charts: always specify chart type, x-axis, y-axis`;
+
+let key = HARDCODED_KEY || localStorage.getItem('groq_key') || '';
+let groqHistory = [];
+let mode = 'auto';
+let busy = false;
+
+const MODES = {
+  auto:'', sql:'[SQL MODE] ', chart:'[CHART MODE] ',
+  dashboard:'[DASHBOARD MODE] ', tutor:'[TUTOR MODE] ', fix:'[FIX MODE] '
+};
+
+window.onload = () => {
+  updateKeyUI();
+  loadMB();
+  addMsg('agent', `Ready. I know your Resume DB schema, your dashboard at **anandtannak-metabase.hf.space**, and your learning progress.\n\nAsk me anything or pick a quick prompt above.`);
+};
+
+function updateKeyUI(){
+  const notice = document.getElementById('keyNotice');
+  if(key){
+    setStatus(true);
+    notice.style.display = 'none';
+  } else {
+    setStatus(false);
+    notice.style.display = 'block';
+  }
+}
+
+function saveKey(){
+  const v = document.getElementById('keyInp').value.trim();
+  if(!v) return;
+  key = v;
+  localStorage.setItem('groq_key', key);
+  updateKeyUI();
+  addMsg('agent','API key saved. You can now ask questions.');
+}
+
+function setStatus(on){
+  document.getElementById('sdot').className='sdot'+(on?' on':'');
+  document.getElementById('stxt').textContent=on?'ready':'no key';
+}
+
+function loadMB(){
+  const url = document.getElementById('mbUrl').value.trim();
+  if(!url) return;
+  const frame = document.getElementById('mbFrame');
+  frame.src = url;
+  frame.style.display = 'block';
+  document.getElementById('mbPh').style.display = 'none';
+  document.getElementById('mbFail').style.display = 'block';
+}
+
+// Mode tabs
+document.querySelectorAll('.mtab').forEach(t=>{
+  t.onclick=()=>{
+    document.querySelectorAll('.mtab').forEach(x=>x.classList.remove('active'));
+    t.classList.add('active'); mode=t.dataset.m;
+    document.getElementById('mlbl').textContent=mode;
+  };
+});
+
+// Quick prompts
+document.querySelectorAll('.chip').forEach(c=>{
+  c.onclick=()=>{ document.getElementById('inp').value=c.dataset.q; send(); };
+});
+
+function addMsg(role, text){
+  const list = document.getElementById('msgs');
+  const w = document.createElement('div'); w.className = 'mw ' + role;
+  const lb = document.createElement('div'); lb.className = 'mlbl';
+  lb.textContent = role === 'user' ? 'you' : 'agent';
+  const b = document.createElement('div'); b.className = 'bub';
+  b.innerHTML = fmt(text);
+  b.querySelectorAll('pre').forEach(pre => {
+    const btn = document.createElement('button');
+    btn.className = 'cpybtn'; btn.textContent = 'copy SQL';
+    btn.onclick = () => {
+      navigator.clipboard.writeText(pre.textContent);
+      btn.textContent = 'copied!';
+      setTimeout(()=>btn.textContent='copy SQL', 2000);
+    };
+    pre.after(btn);
+  });
+  w.appendChild(lb); w.appendChild(b); list.appendChild(w);
+  // scroll to bottom
+  setTimeout(() => {
+  list.scrollTop = list.scrollHeight;
+}, 150);
+}
+
+function showTyping(){
+  const list = document.getElementById('msgs');
+  const w = document.createElement('div'); w.id='typing'; w.className='tw';
+  const lb = document.createElement('div'); lb.className='mlbl'; lb.textContent='agent';
+  const b = document.createElement('div'); b.className='tbub';
+  b.innerHTML='<div class="dot"></div><div class="dot"></div><div class="dot"></div>';
+  w.appendChild(lb); w.appendChild(b); list.appendChild(w);
+  setTimeout(() => {
+  list.scrollTop = list.scrollHeight;
+}, 150);
+}
+function removeTyping(){ const t=document.getElementById('typing'); if(t)t.remove(); }
+
+async function send(){
+  const inp = document.getElementById('inp');
+  const raw = inp.value.trim();
+  if(!raw || busy) return;
+  inp.value = ''; inp.style.height = 'auto';
+  busy = true; document.getElementById('sbtn').disabled = true;
+  addMsg('user', raw);
+
+  if(!key){
+    addMsg('agent', 'No API key set. Paste your Gemini key in the box above the chat.');
+    busy = false; document.getElementById('sbtn').disabled = false; return;
+  }
+
+  const prefix = MODES[mode] || '';
+  const userMsg = prefix + raw;
+  groqHistory.push({role:'user', content: userMsg});
+  showTyping();
+
+  try {
+    // Build messages for Groq (OpenAI-compatible format)
+    const messages = [
+      {role:'system', content: SYSTEM},
+      ...groqHistory
+    ];
+
+    const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${key}`
+      },
+      body: JSON.stringify({
+        model: 'llama-3.3-70b-versatile',
+        messages: messages,
+        max_tokens: 1500,
+        temperature: 0.3
+      })
+    });
+    const data = await res.json();
+    removeTyping();
+    if(data.error){
+      addMsg('agent', `API error: ${data.error.message}\n\nCheck your Groq key at console.groq.com`);
+      groqHistory.pop();
+    } else {
+      const reply = data.choices?.[0]?.message?.content || 'No response.';
+      groqHistory.push({role:'assistant', content: reply});
+      if(groqHistory.length > 24) groqHistory = groqHistory.slice(-24);
+      addMsg('agent', reply);
+    }
+  } catch(e){
+    removeTyping();
+    addMsg('agent', `Network error: ${e.message}`);
+    groqHistory.pop();
+  }
+  busy = false; document.getElementById('sbtn').disabled = false;
+}
+
+function fmt(t){
+  return t
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/```sql\n?([\s\S]*?)```/gi,(_,c)=>`<pre>${c.trim()}</pre>`)
+    .replace(/```\n?([\s\S]*?)```/g,(_,c)=>`<pre>${c.trim()}</pre>`)
+    .replace(/`([^`\n]+)`/g,'<code>$1</code>')
+    .replace(/\*\*([^*\n]+)\*\*/g,'<strong>$1</strong>')
+    .replace(/^####\s(.+)/gm,'<h4>$1</h4>')
+    .replace(/^[-•]\s(.+)/gm,'<li>$1</li>')
+    .replace(/^\d+\.\s(.+)/gm,'<li>$1</li>')
+    .replace(/\n/g,'<br>');
+}
+
+function onKey(e){
+  if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); send(); }
+}
+
+document.getElementById('inp').addEventListener('input', function(){
+  this.style.height = 'auto';
+  this.style.height = Math.min(this.scrollHeight, 90) + 'px';
+});
+
+// Drag to resize
+(() => {
+  const root = document.documentElement;
+  const splitter = document.getElementById('splitter');
+  let dragging = false;
+  let lpx = null;
+
+  function setLW(px){
+    const avail = window.innerWidth - splitter.offsetWidth;
+    const clamped = Math.min(Math.max(px, 340), avail - 300);
+    root.style.setProperty('--lw', clamped + 'px');
+    lpx = clamped;
+    localStorage.setItem('mb_lw', String(clamped));
+  }
+
+  const saved = Number(localStorage.getItem('mb_lw'));
+  if(saved) setLW(saved);
+
+  splitter.addEventListener('pointerdown', e => {
+    dragging = true;
+    splitter.setPointerCapture(e.pointerId);
+    document.body.style.cursor = 'col-resize';
+    document.body.style.userSelect = 'none';
+  });
+  window.addEventListener('pointermove', e => { if(dragging) setLW(e.clientX); });
+  window.addEventListener('pointerup', () => {
+    dragging = false;
+    document.body.style.cursor = '';
+    document.body.style.userSelect = '';
+  });
+  window.addEventListener('resize', () => { if(lpx) setLW(lpx); });
+})();
+</script>
+</body>
+</html>
