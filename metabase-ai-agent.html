@@ -308,12 +308,8 @@ iframe{width:100%;height:100%;border:none}
 </div>
 
 <script>
-// ── CONFIG: paste your Groq key here (free at console.groq.com) ──
-const HARDCODED_KEY = ''; // paste your gsk_... key here 
-
-const SYSTEM = `You are a Metabase and SQL expert assistant helping a developer learn analytics with the "Resume Builder" project.
-
-DATABASE "Resume DB" — 7 tables on Aiven MySQL, connected to Metabase at https://anandtannak-metabase.hf.space:
+const HARDCODED_KEY = '';
+const SYSTEM = `You are a helpful Metabase analytics assistant. Keep replies clear and simple.
 
 users: id, name, email, password, role, created_at, reset_token, reset_token_expiry
 resumes: id, user_id, title, summary, full_name, professional_title, email, phone, location, linkedin, website, nationality, date_of_birth, template_name, template_style, created_at, updated_at

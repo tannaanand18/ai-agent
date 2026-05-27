@@ -15,7 +15,7 @@ HTML_FILE = os.path.join(BASE_DIR, "metabase-ai-agent.html")
 REMOTE_METABASE_BASE = os.getenv("REMOTE_METABASE_BASE", "https://anandtannak-metabase.hf.space")
 METABASE_ADMIN_EMAIL = os.getenv("METABASE_ADMIN_EMAIL", "tannaanand992@gmail.com")
 METABASE_ADMIN_PASSWORD = os.getenv("METABASE_ADMIN_PASSWORD", "tanna_anand_1")
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")  # set this in your .env or environment
+GROQ_API_KEY = os.getenv("GROQ_API_KEY", "")  # set this in your .env or environment
 LOCAL_PORT = int(os.getenv("PORT", "8000"))
 
 app = FastAPI()
@@ -74,11 +74,11 @@ async def root() -> HTMLResponse:
     html = html.replace("https://anandtannak-metabase.hf.space", "/metabase")
 
     # ── KEY INJECTION ──
-    # Inject Gemini key from environment so you never hardcode it in the HTML
-    if GEMINI_API_KEY:
+    # Inject Groq key from environment so you never hardcode it in the HTML
+    if GROQ_API_KEY:
         html = html.replace(
             "const HARDCODED_KEY = '';",
-            f"const HARDCODED_KEY = '{GEMINI_API_KEY}';"
+            f"const HARDCODED_KEY = '{GROQ_API_KEY}';"
         )
 
     return HTMLResponse(html)
