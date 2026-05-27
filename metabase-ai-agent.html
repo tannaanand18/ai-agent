@@ -203,9 +203,9 @@ textarea:focus{border-color:rgba(50,209,125,.35);box-shadow:0 0 0 4px rgba(50,20
       <div class="right-head">
         <div class="titleblock">
           <h2>Metabase Agent</h2>
-          <p>Connected to your Resume DB analytics in Metabase.</p>
+          <p>Uses live Resume DB analytics from Metabase with authenticated context.</p>
         </div>
-        <div class="tag">Resume DB aware</div>
+        <div class="tag">Live analytics connected</div>
       </div>
 
       <div class="badgeRow">
@@ -254,7 +254,10 @@ textarea:focus{border-color:rgba(50,209,125,.35);box-shadow:0 0 0 4px rgba(50,20
 
 <script>
 const HARDCODED_KEY = '';
-const SYSTEM = `You are a helpful Metabase analytics assistant. Keep replies clear and simple.
+const SYSTEM = `You are a helpful Metabase analytics assistant.
+
+You receive live Metabase analytics context with each request. Treat that context as the source of truth for dashboards, saved questions, card metadata, and query results.
+If the context does not contain enough information, say what is missing and ask for the dashboard or question name.
 
 DATABASE "Resume DB"
 users: id, name, email, password, role, created_at, reset_token, reset_token_expiry
@@ -275,6 +278,7 @@ let apiKey = HARDCODED_KEY || localStorage.getItem('groq_key') || '';
 let history = [];
 let busy = false;
 let userScrolled = false;
+let currentAnalyticsUrl = '/metabase/';
 
 const els = {
   msgs: document.getElementById('msgs'),
@@ -352,6 +356,7 @@ function loadMetabase(){
     url = url.replace('https://anandtannak-metabase.hf.space', '/metabase');
     url = url.replace('http://anandtannak-metabase.hf.space', '/metabase');
   }
+  currentAnalyticsUrl = url;
   const qmatch = url.match(/\/question\/(\d+)/);
   if(qmatch){
     fetch(`/api/metabase/embed/question/${qmatch[1]}`)
@@ -364,14 +369,46 @@ function loadMetabase(){
   els.frameNote.style.display = 'block';
 }
 
+async function fetchAnalyticsContext(query){
+  try{
+    const res = await fetch(`/api/analytics/context?q=${encodeURIComponent(query)}&url=${encodeURIComponent(currentAnalyticsUrl)}`);
+    if(!res.ok) return '';
+    const data = await res.json();
+    const chunks = [];
+    if(data.search?.data?.length){
+      chunks.push('Search results: ' + data.search.data.slice(0, 5).map(item => `${item.model || 'item'}:${item.name || item.id || 'unknown'}`).join(' | '));
+    }
+    if(data.card){
+      chunks.push(`Card: ${data.card.name || data.card.id || 'unknown'}${data.card.description ? ` :: ${data.card.description}` : ''}`);
+    }
+    if(data.card_result?.length){
+      chunks.push(`Card result sample: ${JSON.stringify(data.card_result.slice(0, 3))}`);
+    }
+    if(data.dashboard){
+      chunks.push(`Dashboard: ${data.dashboard.name || data.dashboard.id || 'unknown'}`);
+    }
+    if(data.errors?.length){
+      chunks.push(`Context warnings: ${data.errors.join(' | ')}`);
+    }
+    return chunks.join('\n');
+  }catch(err){
+    return '';
+  }
+}
+
 async function send(){
   const raw = els.inp.value.trim();
   if(!raw || busy) return;
   if(!apiKey){ addMessage('assistant', 'No API key is set. Add your Groq key or save one locally in the browser.'); return; }
   busy = true; els.send.disabled = true; els.inp.value = '';
   addMessage('user', raw); typingNode();
-  const messages = [{ role: 'system', content: SYSTEM }, ...history, { role: 'user', content: raw }];
   try{
+    const analyticsContext = await fetchAnalyticsContext(raw);
+    const messages = [{ role: 'system', content: SYSTEM }];
+    if(analyticsContext){
+      messages.push({ role: 'system', content: `Live Metabase context:\n${analyticsContext}` });
+    }
+    messages.push(...history, { role: 'user', content: raw });
     const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method:'POST',
       headers:{ 'Content-Type':'application/json', 'Authorization':'Bearer ' + apiKey },
@@ -416,7 +453,7 @@ function saveLocalKey(){
 window.onload = () => {
   updateKeyUI();
   loadMetabase();
-  addMessage('assistant', 'Ready. I am connected to your Resume DB analytics in Metabase, so ask me about SQL, charts, filters, or dashboard fixes.');
+  addMessage('assistant', 'Ready. I can pull live Resume DB analytics from Metabase for SQL, charts, filters, dashboards, and saved questions.');
   els.msgs.addEventListener('scroll', syncScrollState);
   els.scrollBtn.addEventListener('click', () => {
     userScrolled = false;
