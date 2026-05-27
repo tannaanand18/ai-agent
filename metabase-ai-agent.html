@@ -258,6 +258,7 @@ const SYSTEM = `You are a helpful Metabase analytics assistant.
 
 You receive live Metabase analytics context with each request. Treat that context as the source of truth for dashboards, saved questions, card metadata, and query results.
 If the context does not contain enough information, say what is missing and ask for the dashboard or question name.
+If a dashboard card shows an exact metric like total users, total resumes, or a chart value, use that exact value instead of giving only a generic SQL query.
 
 DATABASE "Resume DB"
 users: id, name, email, password, role, created_at, reset_token, reset_token_expiry
@@ -350,6 +351,25 @@ function syncScrollState(){
   showScrollButton(userScrolled);
 }
 
+function getLiveMetabaseContext(){
+  try{
+    const frame = els.mbFrame;
+    const doc = frame && frame.contentDocument;
+    if(!doc || !doc.body) return '';
+    const text = (doc.body.innerText || '').replace(/\s+/g, ' ').trim();
+    const title = (doc.title || '').trim();
+    const slice = text.slice(0, 7000);
+    if(!slice && !title) return '';
+    return [
+      'Live iframe context:',
+      title ? `Page title: ${title}` : 'Page title: unknown',
+      slice ? `Visible text: ${slice}` : 'Visible text: empty'
+    ].join('\n');
+  }catch(err){
+    return '';
+  }
+}
+
 function loadMetabase(){
   let url = els.mbUrl.value.trim() || '/metabase/';
   if(url.includes('anandtannak-metabase.hf.space')){
@@ -403,8 +423,14 @@ async function send(){
   busy = true; els.send.disabled = true; els.inp.value = '';
   addMessage('user', raw); typingNode();
   try{
-    const analyticsContext = await fetchAnalyticsContext(raw);
+    const [analyticsContext, liveContext] = await Promise.all([
+      fetchAnalyticsContext(raw),
+      Promise.resolve(getLiveMetabaseContext())
+    ]);
     const messages = [{ role: 'system', content: SYSTEM }];
+    if(liveContext){
+      messages.push({ role: 'system', content: liveContext });
+    }
     if(analyticsContext){
       messages.push({ role: 'system', content: `Live Metabase context:\n${analyticsContext}` });
     }
