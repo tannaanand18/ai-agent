@@ -173,10 +173,6 @@ textarea:focus{border-color:rgba(50,209,125,.35);box-shadow:0 0 0 4px rgba(50,20
 <body>
 <div class="shell">
   <header class="topbar">
-    <div class="brand">
-      <strong>Metabase Agent Workspace</strong>
-      <span>Metabase on the left, agent on the right</span>
-    </div>
     <div class="toolbar">
       <div class="urlbox">
         <label>url://</label>
@@ -207,9 +203,9 @@ textarea:focus{border-color:rgba(50,209,125,.35);box-shadow:0 0 0 4px rgba(50,20
       <div class="right-head">
         <div class="titleblock">
           <h2>Metabase Agent</h2>
-          <p>Ask for SQL, chart ideas, filters, or dashboard fixes.</p>
+          <p>Connected to your Resume DB analytics in Metabase.</p>
         </div>
-        <div class="tag">Black Theme</div>
+        <div class="tag">Resume DB aware</div>
       </div>
 
       <div class="badgeRow">
@@ -420,7 +416,7 @@ function saveLocalKey(){
 window.onload = () => {
   updateKeyUI();
   loadMetabase();
-  addMessage('assistant', 'Ready. Ask me about SQL, charts, filters, or dashboard fixes.');
+  addMessage('assistant', 'Ready. I am connected to your Resume DB analytics in Metabase, so ask me about SQL, charts, filters, or dashboard fixes.');
   els.msgs.addEventListener('scroll', syncScrollState);
   els.scrollBtn.addEventListener('click', () => {
     userScrolled = false;
