@@ -3,330 +3,264 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Metabase Analytics Workspace</title>
+<title>Metabase Agent Workspace</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-:root {
-  --bg:#0a0b0d;--bg2:#111215;--bg3:#18191d;--bg4:#1f2025;--bg5:#26282e;
-  --border:rgba(255,255,255,0.06);--border2:rgba(255,255,255,0.11);
-  --text:#dde1e9;--text2:#8b909e;--text3:#454850;
-  --green:#3dd68c;--green2:#2ab874;--gd:rgba(61,214,140,0.10);--gd2:rgba(61,214,140,0.04);
-  --blue:#5b9cf6;--bd:rgba(91,156,246,0.10);
-  --amber:#f0b429;--ad:rgba(240,180,41,0.10);
-  --red:#e05252;
-  --lw:68%;
-  --fh:'DM Sans',sans-serif;--fm:'JetBrains Mono',monospace;
-  --r:8px;--rs:5px;
+:root{
+  --bg:#050608;
+  --bg2:#0b0d11;
+  --bg3:#11141a;
+  --bg4:#161a22;
+  --line:rgba(255,255,255,.08);
+  --line2:rgba(255,255,255,.12);
+  --text:#e7ebf4;
+  --muted:#8992a3;
+  --muted2:#5d6677;
+  --green:#32d17d;
+  --green2:#20b965;
+  --blue:#5aa2ff;
+  --amber:#e2aa3c;
+  --shadow:0 18px 50px rgba(0,0,0,.45);
+  --font:'DM Sans',sans-serif;
+  --mono:'JetBrains Mono',monospace;
+  --radius:14px;
 }
 *{box-sizing:border-box;margin:0;padding:0}
-html,body{
-  height:100%;
-  margin:0;
-  background:var(--bg);
+html,body{height:100%}
+body{
+  font-family:var(--font);
   color:var(--text);
-  font-family:var(--fh);
+  background:
+    radial-gradient(circle at top left, rgba(50,209,125,.10), transparent 24%),
+    radial-gradient(circle at top right, rgba(90,162,255,.08), transparent 28%),
+    linear-gradient(180deg, #050608 0%, #080a0f 100%);
   overflow:hidden;
 }
-
-/* ── layout ── */
-.shell{display:grid;grid-template-rows:44px 1fr;height:100vh;max-height:100vh;overflow:hidden}
-.topbar{display:flex;align-items:center;gap:10px;padding:0 14px;background:var(--bg2);border-bottom:1px solid var(--border);z-index:10}
-.logo{font-size:13px;font-weight:700;letter-spacing:-.02em;color:var(--green);white-space:nowrap}
-.logo span{color:var(--text3);font-weight:400}
-.sep{width:1px;height:18px;background:var(--border2);flex-shrink:0}
-.url-wrap{display:flex;align-items:center;gap:6px;flex:1;max-width:380px}
-.url-lbl{font-size:11px;color:var(--text3);font-family:var(--fm);white-space:nowrap}
-.url-input{flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:var(--rs);padding:4px 9px;font-family:var(--fm);font-size:11px;color:var(--text2);outline:none;transition:border .15s}
-.url-input:focus{border-color:var(--green);color:var(--text)}
-.tbtn{padding:4px 11px;border-radius:var(--rs);font-family:var(--fh);font-size:11px;font-weight:600;cursor:pointer;transition:all .15s;white-space:nowrap;border:1px solid}
-.tbtn-green{background:var(--gd);border-color:var(--green);color:var(--green)}
-.tbtn-green:hover{background:var(--green);color:#000}
-.status{margin-left:auto;display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text3);font-family:var(--fm)}
-.sdot{width:5px;height:5px;border-radius:50%;background:var(--text3)}
-.sdot.on{background:var(--green);box-shadow:0 0 5px var(--green)}
-
-.main{
-  display:grid;
-  grid-template-columns:minmax(340px,var(--lw)) min-content minmax(0,1fr);
-  overflow:hidden;
-  height:calc(100vh - 44px);
-  min-height:0;
+button,input,textarea{font:inherit}
+.shell{height:100vh;display:grid;grid-template-rows:58px 1fr}
+.topbar{
+  display:flex;align-items:center;gap:14px;padding:0 16px 0 18px;
+  background:rgba(9,11,15,.90);backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--line);
 }
-
-.main > *{
-  min-height:0;
+.brand{display:flex;flex-direction:column;line-height:1}
+.brand strong{font-size:14px;letter-spacing:-.02em}
+.brand span{font-size:11px;color:var(--muted);margin-top:3px}
+.toolbar{margin-left:auto;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.urlbox{
+  display:flex;align-items:center;gap:8px;
+  background:rgba(255,255,255,.03);
+  border:1px solid var(--line);
+  border-radius:999px;
+  padding:6px 10px;
+  min-width:min(50vw,560px)
 }
-
-/* ── metabase panel ── */
-.mb-panel{display:flex;flex-direction:column;border-right:1px solid var(--border);overflow:hidden;min-height:0}
-.mb-bar{padding:7px 14px;background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;flex-shrink:0}
-.mb-bar-title{font-size:11px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--text3)}
-.mb-wrap{flex:1;position:relative;background:var(--bg3);min-height:0}
-iframe{width:100%;height:100%;border:none}
-.mb-ph{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:40px}
-.mb-ph-title{font-size:16px;font-weight:700;color:var(--text2)}
-.mb-ph-sub{font-size:12px;color:var(--text3);text-align:center;line-height:1.7;max-width:320px;font-family:var(--fm)}
-.mb-fail{display:none;position:absolute;left:16px;right:16px;bottom:16px;background:rgba(224,82,82,.07);border:1px solid rgba(224,82,82,.2);border-radius:var(--r);padding:10px 12px;color:#ffaaaa;font-size:11px;font-family:var(--fm);line-height:1.6}
-
-/* ── divider ── */
-.divider{background:var(--bg2);border-left:1px solid var(--border);border-right:1px solid var(--border);cursor:col-resize;position:relative;z-index:5;transition:background .15s}
-.divider:hover{background:var(--gd)}
-.divider::after{content:'';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:2px;height:36px;border-radius:99px;background:var(--border2)}
-
-/* ── agent ── */
-.agent{
-  display:flex;
-  flex-direction:column;
-  background:var(--bg2);
-  overflow:hidden;
-  min-width:300px;
-  min-height:0;
-  height:calc(100vh - 44px);
+.urlbox label{font-size:11px;color:var(--muted);font-family:var(--mono)}
+.urlbox input{flex:1;background:transparent;border:none;outline:none;color:var(--text);font-size:12px}
+.btn{
+  border:none;border-radius:999px;padding:9px 14px;cursor:pointer;
+  background:linear-gradient(180deg, rgba(50,209,125,.95), rgba(32,185,101,.95));
+  color:#04110a;font-weight:800;box-shadow:0 10px 24px rgba(50,209,125,.18)
 }
-
-.a-header{padding:10px 13px 9px;border-bottom:1px solid var(--border);flex-shrink:0}
-.a-top{display:flex;align-items:center;gap:7px;margin-bottom:7px}
-.a-name{font-size:13px;font-weight:700;letter-spacing:-.01em;color:var(--text)}
-.a-badge{font-size:10px;padding:2px 7px;border-radius:20px;background:var(--gd);color:var(--green);border:1px solid rgba(61,214,140,.25);font-family:var(--fm);margin-left:auto}
-.a-pills{display:flex;flex-wrap:wrap;gap:4px}
-.pill{font-size:10px;font-family:var(--fm);padding:2px 7px;background:var(--bg4);border:1px solid var(--border);border-radius:20px;color:var(--text3)}
-.pill.on{color:var(--blue);border-color:rgba(91,156,246,.25);background:var(--bd)}
-
-/* ── modes ── */
-.modes{display:flex;gap:3px;padding:7px 11px;border-bottom:1px solid var(--border);flex-shrink:0}
-.mtab{flex:1;padding:4px 2px;font-size:10px;font-family:var(--fm);font-weight:500;text-align:center;border:1px solid var(--border);border-radius:var(--rs);cursor:pointer;color:var(--text3);background:transparent;transition:all .15s}
-.mtab:hover{border-color:var(--border2);color:var(--text2)}
-.mtab.active{background:var(--gd);border-color:rgba(61,214,140,.35);color:var(--green)}
-
-/* ── quick prompts ── */
-.quick{padding:8px 11px;border-bottom:1px solid var(--border);flex-shrink:0}
-.qlbl{font-size:10px;font-family:var(--fm);color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px}
-.qgrid{display:flex;flex-wrap:wrap;gap:4px}
-.chip{font-size:10px;padding:3px 8px;background:var(--bg3);border:1px solid var(--border);border-radius:20px;color:var(--text2);cursor:pointer;transition:all .15s;font-family:var(--fm)}
-.chip:hover{border-color:var(--green);color:var(--green);background:var(--gd2)}
-
-/* ── messages — FINAL FIX ── */
-.msgs{
-  flex:1 1 auto;
-  min-height:0;
-  overflow-y:auto;
-  overflow-x:hidden;
-  padding:11px;
-  display:flex;
-  flex-direction:column;
-  gap:9px;
-  scroll-behavior:smooth;
-  overscroll-behavior:contain;
+.status{display:flex;align-items:center;gap:7px;font-size:11px;color:var(--muted);font-family:var(--mono)}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--muted2)}
+.dot.on{background:var(--green);box-shadow:0 0 0 4px rgba(50,209,125,.14)}
+.main{display:grid;grid-template-columns:minmax(360px,1.25fr) 10px minmax(340px,.95fr);min-height:0;height:100%}
+.panel{min-height:0;overflow:hidden}
+.left{display:flex;flex-direction:column;background:rgba(6,8,11,.88);border-right:1px solid var(--line)}
+.left-head{
+  padding:14px 16px;border-bottom:1px solid var(--line);
+  background:linear-gradient(180deg, rgba(255,255,255,.02), transparent)
 }
-
-.msgs::-webkit-scrollbar{
-  width:6px;
+.left-head h1{font-size:18px;letter-spacing:-.03em}
+.left-head p{margin-top:4px;color:var(--muted);font-size:12px}
+.frame-wrap{position:relative;flex:1;min-height:0;background:#fff}
+.frame-wrap iframe{width:100%;height:100%;border:none;background:#fff}
+.frame-note{
+  position:absolute;left:16px;right:16px;bottom:16px;padding:10px 12px;border-radius:12px;
+  background:rgba(16,20,28,.90);color:#d8deea;border:1px solid rgba(255,255,255,.08);
+  font-size:12px;box-shadow:var(--shadow)
 }
-
-.msgs::-webkit-scrollbar-thumb{
-  background:#2a2d35;
-  border-radius:10px;
+.frame-note strong{color:var(--green)}
+.divider{background:transparent;cursor:col-resize;position:relative}
+.divider::before{
+  content:'';position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+  width:3px;height:54px;border-radius:999px;background:rgba(255,255,255,.20)
 }
-
-.msgs::-webkit-scrollbar-thumb:hover{
-  background:#3dd68c;
+.right{display:flex;flex-direction:column;background:rgba(10,12,16,.96);min-width:0;position:relative}
+.right-head{
+  padding:14px 16px;border-bottom:1px solid var(--line);
+  display:flex;align-items:center;justify-content:space-between;gap:10px
 }
-.msgs::-webkit-scrollbar{width:3px}
-.msgs::-webkit-scrollbar-thumb{background:var(--bg5);border-radius:2px}
-.msgs::-webkit-scrollbar-thumb:hover{background:var(--border2)}
-
-.scroll-btn{
-  display:none;
-  align-self:flex-end;
-  margin:0 11px 6px 0;
-  padding:4px 9px;
-  background:var(--gd);
-  border:1px solid rgba(61,214,140,.25);
-  border-radius:20px;
-  color:var(--green);
-  cursor:pointer;
-  font-family:var(--fm);
-  font-size:10px;
+.titleblock h2{font-size:16px;letter-spacing:-.02em}
+.titleblock p{font-size:12px;color:var(--muted);margin-top:3px}
+.tag{
+  font-size:11px;padding:4px 9px;border:1px solid rgba(50,209,125,.22);border-radius:999px;
+  color:var(--green);background:rgba(50,209,125,.08);font-family:var(--mono)
 }
-.scroll-btn:hover{background:rgba(61,214,140,.16)}
-
-.mw{
-  display:flex;
-  flex-direction:column;
-  gap:2px;
-  width:100%;
-  min-width:0;
+.quick{
+  padding:11px 14px;border-bottom:1px solid var(--line);
+  display:flex;flex-wrap:wrap;gap:8px;background:rgba(255,255,255,.015)
 }
-.mw.user{align-items:flex-end}
-.mw.agent{align-items:flex-start}
-.mlbl{font-size:10px;font-family:var(--fm);color:var(--text3);padding:0 3px}
-.bub{
-  padding:9px 12px;
-  border-radius:var(--r);
-  font-size:12px;
-  line-height:1.65;
-  max-width:100%;
-  width:100%;
-  overflow:hidden;
-  word-break:break-word;
-  box-sizing:border-box;
+.chip{
+  border:1px solid var(--line);background:rgba(255,255,255,.03);color:var(--text);
+  padding:7px 10px;border-radius:999px;font-size:11px;cursor:pointer;transition:.15s ease
 }
-.mw.user .bub{background:var(--gd);border:1px solid rgba(61,214,140,.18);color:var(--text);border-radius:var(--r) var(--r) 2px var(--r)}
-.mw.agent .bub{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r) var(--r) var(--r) 2px}
-.bub pre{
-  background:var(--bg);
-  border:1px solid var(--border2);
-  border-radius:var(--rs);
-  padding:9px 11px;
-  margin:7px 0 2px;
-  overflow-x:auto;
-  overflow-y:hidden;
-  max-width:100%;
-  width:100%;
-  font-size:11px;
-  font-family:var(--fm);
-  color:var(--green);
-  line-height:1.6;
-  white-space:pre-wrap;
-  word-break:break-word;
-  box-sizing:border-box;
+.chip:hover{border-color:rgba(50,209,125,.35);background:rgba(50,209,125,.08);color:var(--green)}
+.messages{
+  flex:1;min-height:0;overflow:auto;padding:14px 14px 0 14px;
+  display:flex;flex-direction:column;gap:12px
 }
-.bub code{font-family:var(--fm);font-size:11px;background:var(--bg);border:1px solid var(--border);border-radius:3px;padding:1px 4px;color:var(--blue)}
-.bub strong{color:var(--amber);font-weight:600}
-.bub h4{font-size:10px;font-weight:700;color:var(--green);margin:9px 0 3px;letter-spacing:.05em;text-transform:uppercase}
-.bub ul,.bub ol{padding-left:14px;margin:3px 0}
-.bub li{margin:2px 0;font-size:11.5px}
-.cpybtn{display:inline-block;margin-top:2px;padding:2px 8px;font-size:10px;font-family:var(--fm);background:var(--bg4);border:1px solid var(--border);border-radius:4px;color:var(--text3);cursor:pointer;transition:all .15s}
-.cpybtn:hover{border-color:var(--green);color:var(--green)}
-
-/* ── typing ── */
-.tw{display:flex;flex-direction:column;gap:2px;align-items:flex-start}
-.tbub{padding:9px 13px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r) var(--r) var(--r) 2px;display:flex;gap:4px;align-items:center}
-.dot{width:4px;height:4px;border-radius:50%;background:var(--text3);animation:bob .9s infinite}
-.dot:nth-child(2){animation-delay:.2s}
-.dot:nth-child(3){animation-delay:.4s}
-@keyframes bob{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-4px)}}
-
-/* ── input ── */
-.iarea{padding:9px 11px;border-top:1px solid var(--border);background:var(--bg2);flex-shrink:0}
-.irow{display:flex;gap:6px;align-items:flex-end}
-.ibox{flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:8px 11px;font-family:var(--fh);font-size:12px;color:var(--text);resize:none;outline:none;min-height:38px;max-height:90px;line-height:1.5;transition:border .15s}
-.ibox:focus{border-color:rgba(61,214,140,.4)}
-.ibox::placeholder{color:var(--text3)}
-.sbtn{padding:8px 12px;background:var(--green);color:#000;border:none;border-radius:var(--r);cursor:pointer;font-family:var(--fh);font-size:12px;font-weight:700;transition:all .15s;white-space:nowrap;flex-shrink:0}
-.sbtn:hover{background:var(--green2)}
-.sbtn:disabled{opacity:.3;cursor:not-allowed}
-.ihint{font-size:10px;font-family:var(--fm);color:var(--text3);margin-top:4px}
-
-/* ── key notice (no modal) ── */
-.key-notice{background:var(--ad);border:1px solid rgba(240,180,41,.2);border-radius:var(--r);padding:8px 11px;font-size:11px;font-family:var(--fm);color:var(--amber);line-height:1.6;margin:0 11px 8px;flex-shrink:0;display:none}
-.key-notice a{color:var(--green);text-decoration:none}
-.key-row{display:flex;gap:5px;margin-top:6px}
-.key-inp{flex:1;background:var(--bg3);border:1px solid var(--border2);border-radius:var(--rs);padding:5px 9px;font-family:var(--fm);font-size:11px;color:var(--text);outline:none}
-.key-inp:focus{border-color:var(--green)}
-.key-save{padding:5px 12px;background:var(--green);color:#000;border:none;border-radius:var(--rs);font-family:var(--fh);font-size:11px;font-weight:700;cursor:pointer}
+.messages::-webkit-scrollbar{width:4px}
+.messages::-webkit-scrollbar-thumb{background:rgba(255,255,255,.12);border-radius:99px}
+.scrollBtn{
+  position:absolute;right:16px;bottom:92px;border:none;border-radius:14px;padding:10px 12px;
+  cursor:pointer;z-index:20;background:linear-gradient(180deg, rgba(50,209,125,.96), rgba(32,185,101,.96));
+  color:#04110a;font-weight:800;box-shadow:0 12px 30px rgba(0,0,0,.35);display:none
+}
+.msg{display:flex;flex-direction:column;gap:5px;max-width:100%}
+.msg.user{align-items:flex-end}
+.msg.assistant{align-items:flex-start}
+.role{font-size:10px;color:var(--muted2);font-family:var(--mono);text-transform:uppercase;letter-spacing:.08em;padding:0 2px}
+.bubble{
+  max-width:min(100%, 100%);padding:11px 12px;border-radius:14px;line-height:1.6;font-size:13px;
+  white-space:normal;border:1px solid var(--line);background:rgba(255,255,255,.03);box-shadow:0 8px 20px rgba(0,0,0,.16)
+}
+.user .bubble{background:rgba(50,209,125,.08);border-color:rgba(50,209,125,.16)}
+.assistant .bubble{background:rgba(255,255,255,.03)}
+.bubble pre{
+  margin-top:8px;padding:10px;border-radius:12px;background:#090b10;border:1px solid rgba(90,162,255,.18);
+  overflow:auto;color:#a7e4ff;font-family:var(--mono);font-size:12px;white-space:pre-wrap;word-break:break-word
+}
+.copyBtn{
+  margin-top:6px;border:none;border-radius:999px;padding:5px 9px;cursor:pointer;
+  background:rgba(255,255,255,.05);color:var(--muted);font-size:11px;font-family:var(--mono)
+}
+.copyBtn:hover{color:var(--green);border:1px solid rgba(50,209,125,.22)}
+.typing{display:flex;align-items:center;gap:6px;padding:10px 12px;border-radius:14px;background:rgba(255,255,255,.03);border:1px solid var(--line)}
+.typing span{width:6px;height:6px;border-radius:50%;background:var(--muted);animation:dot 1s infinite ease-in-out}
+.typing span:nth-child(2){animation-delay:.15s}.typing span:nth-child(3){animation-delay:.3s}
+@keyframes dot{0%,80%,100%{transform:translateY(0);opacity:.45}40%{transform:translateY(-4px);opacity:1}}
+.composer{padding:12px 14px 14px;border-top:1px solid var(--line);background:linear-gradient(180deg, transparent, rgba(0,0,0,.2))}
+.inputrow{display:flex;gap:10px;align-items:flex-end}
+textarea{
+  width:100%;min-height:54px;max-height:160px;resize:none;border-radius:16px;border:1px solid var(--line2);
+  background:rgba(255,255,255,.03);color:var(--text);padding:12px 12px 12px 14px;outline:none;line-height:1.5
+}
+textarea:focus{border-color:rgba(50,209,125,.35);box-shadow:0 0 0 4px rgba(50,209,125,.08)}
+.sendBtn{padding:11px 15px;border:none;border-radius:14px;background:var(--green);color:#04110a;font-weight:800;cursor:pointer;white-space:nowrap}
+.sendBtn:disabled{opacity:.45;cursor:not-allowed}
+.meta{margin-top:8px;font-size:11px;color:var(--muted2);display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.meta code{font-family:var(--mono);color:var(--amber)}
+.notice{display:none;margin:12px 14px 0;padding:10px 12px;border-radius:12px;border:1px solid rgba(226,170,60,.22);background:rgba(226,170,60,.08);color:#ffe7b0;font-size:12px;line-height:1.5}
+.notice a{color:var(--green);text-decoration:none}
+.badgeRow{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.badge{font-size:10px;padding:3px 8px;border-radius:999px;background:rgba(255,255,255,.04);border:1px solid var(--line);color:var(--muted);font-family:var(--mono)}
+.keyNoticeRow{display:flex;gap:8px;margin-top:8px}
+.keyInp{flex:1;background:var(--bg3);border:1px solid var(--line2);border-radius:10px;padding:8px 10px;color:var(--text);outline:none;font-family:var(--mono);font-size:11px}
+.keySave{border:none;border-radius:10px;padding:8px 12px;background:var(--green);color:#04110a;font-weight:800;cursor:pointer}
+@media (max-width: 1100px){
+  body{overflow:auto}
+  .shell{height:auto;min-height:100vh}
+  .main{grid-template-columns:1fr;grid-template-rows:minmax(46vh,60vh) 10px minmax(48vh,1fr)}
+  .divider{height:10px;cursor:row-resize}
+  .divider::before{width:52px;height:3px}
+}
 </style>
 </head>
 <body>
 <div class="shell">
-  <!-- TOP BAR -->
-  <div class="topbar">
-    <span class="logo">Metabase <span>/ Analytics</span></span>
-    <div class="sep"></div>
-    <div class="url-wrap">
-      <span class="url-lbl">url://</span>
-      <input class="url-input" id="mbUrl" type="text" value="/metabase/" />
-      <button class="tbtn tbtn-green" onclick="loadMB()">Load</button>
+  <header class="topbar">
+    <div class="brand">
+      <strong>Metabase Agent Workspace</strong>
+      <span>Metabase on the left, agent on the right</span>
     </div>
-    <div class="status">
-      <div class="sdot" id="sdot"></div>
-      <span id="stxt">no key</span>
-    </div>
-  </div>
-
-  <div class="main">
-    <!-- LEFT: Metabase -->
-    <div class="mb-panel">
-      <div class="mb-bar">
-        <span class="mb-bar-title">Dashboard</span>
+    <div class="toolbar">
+      <div class="urlbox">
+        <label>url://</label>
+        <input id="mbUrl" type="text" value="/metabase/" />
       </div>
-      <div class="mb-wrap">
-        <iframe id="mbFrame" style="display:none" src=""></iframe>
-        <div class="mb-ph" id="mbPh">
-          <div class="mb-ph-title">Metabase Dashboard</div>
-          <div class="mb-ph-sub">Click Load to open your deployed Metabase at<br>anandtannak-metabase.hf.space</div>
+      <button class="btn" id="loadBtn">Load</button>
+      <div class="status"><span class="dot" id="statusDot"></span><span id="statusText">idle</span></div>
+    </div>
+  </header>
+
+  <section class="main">
+    <div class="panel left">
+      <div class="left-head">
+        <h1>Resume Analytics Workspace</h1>
+        <p>Open your Metabase dashboard and keep the assistant focused on analytics work.</p>
+      </div>
+      <div class="frame-wrap">
+        <iframe id="mbFrame" src="/metabase/"></iframe>
+        <div class="frame-note" id="frameNote">
+          Loading through <strong>/metabase/</strong>. If it is blank, open Metabase once in a new tab and reload.
         </div>
-        <div class="mb-fail" id="mbFail">If the frame is blank, Metabase may block iframe embedding. Open the URL in a new tab to log in first, then reload here.</div>
       </div>
     </div>
 
     <div class="divider" id="splitter"></div>
 
-    <!-- RIGHT: Agent -->
-    <div class="agent">
-      <div class="a-header">
-        <div class="a-top">
-          <span class="a-name">Metabase Assistant</span>
-          <span class="a-badge">Groq</span>
+    <div class="panel right">
+      <div class="right-head">
+        <div class="titleblock">
+          <h2>Metabase Agent</h2>
+          <p>Ask for SQL, chart ideas, filters, or dashboard fixes.</p>
         </div>
-        <div class="a-pills">
-          <span class="pill on">users</span><span class="pill on">resumes</span><span class="pill on">skills</span>
-          <span class="pill on">projects</span><span class="pill on">certifications</span>
-          <span class="pill on">education</span><span class="pill on">experience</span>
-        </div>
+        <div class="tag">Black Theme</div>
       </div>
 
-      <div class="modes">
-        <button class="mtab active" data-m="auto">auto</button>
-        <button class="mtab" data-m="sql">sql</button>
-        <button class="mtab" data-m="chart">chart</button>
-        <button class="mtab" data-m="dashboard">dashboard</button>
-        <button class="mtab" data-m="tutor">tutor</button>
-        <button class="mtab" data-m="fix">fix bug</button>
+      <div class="badgeRow">
+        <span class="badge">users</span>
+        <span class="badge">resumes</span>
+        <span class="badge">skills</span>
+        <span class="badge">projects</span>
+        <span class="badge">certifications</span>
+        <span class="badge">education</span>
+        <span class="badge">experience</span>
       </div>
 
       <div class="quick">
-        <div class="qlbl">Quick prompts</div>
-        <div class="qgrid">
-          <span class="chip" data-q="Fix my date filter bug. My skills, projects, certifications and education tables don't have created_at. Show me the correct SQL using JOIN with resumes table and explain the Field Filter setup in Metabase.">date filter fix</span>
-          <span class="chip" data-q="Write SQL to count total skills per user ordered by most skills first.">skills per user</span>
-          <span class="chip" data-q="Which users created more than 2 resumes? Write the SQL.">power users</span>
-          <span class="chip" data-q="How do I create a bar chart in Metabase showing resume count by template_name? Give me step by step.">bar chart guide</span>
-          <span class="chip" data-q="Explain SQL JOINs using my users and resumes tables. Show examples.">explain JOINs</span>
-          <span class="chip" data-q="Find users who registered but never created a resume. Write the SQL.">inactive users</span>
-          <span class="chip" data-q="What are the most popular skill names across all resumes? Write SQL.">top skills</span>
-          <span class="chip" data-q="What should I learn next after JOINs? Give me a learning roadmap for SQL and Metabase.">what to learn next</span>
+        <button class="chip" data-q="Write SQL to count total resumes by user and show the result in Metabase.">total resumes</button>
+        <button class="chip" data-q="Create a chart for user growth over time.">growth chart</button>
+        <button class="chip" data-q="Find users who never created a resume.">inactive users</button>
+        <button class="chip" data-q="Explain how to use a date filter with joined tables.">date filter</button>
+        <button class="chip" data-q="Give me a MySQL query for top skills by resume count.">top skills</button>
+      </div>
+
+      <div class="notice" id="keyNotice">
+        No Groq API key found. Add it in Render as <code>GROQ_API_KEY</code> or save it locally.
+        <a href="https://console.groq.com/keys" target="_blank">Open Groq keys</a>
+        <div class="keyNoticeRow">
+          <input class="keyInp" id="keyInp" type="password" placeholder="gsk_..." />
+          <button class="keySave" id="keySave">Save</button>
         </div>
       </div>
 
-      <!-- Inline key notice (shown when no key) -->
-      <div class="key-notice" id="keyNotice">
-        No Groq API key set. Get a free key from <a href="https://console.groq.com" target="_blank">console.groq.com</a> and paste it below.
-        <div class="key-row">
-          <input class="key-inp" id="keyInp" type="password" placeholder="gsk_..." />
-          <button class="key-save" onclick="saveKey()">Save</button>
-        </div>
-      </div>
+      <div class="messages" id="msgs"></div>
+      <button class="scrollBtn" id="scrollBtn" title="Scroll to latest">↓</button>
 
-      <div class="msgs" id="msgs"></div>
-      <button class="scroll-btn" id="scrollBtn" title="Scroll to latest">↓</button>
-
-      <div class="iarea">
-        <div class="irow">
-          <textarea class="ibox" id="inp" placeholder="Ask anything — SQL, charts, filters, dashboard design..." rows="1" onkeydown="onKey(event)"></textarea>
-          <button class="sbtn" id="sbtn" onclick="send()">Send</button>
+      <div class="composer">
+        <div class="inputrow">
+          <textarea id="inp" placeholder="Ask about SQL, charts, filters, dashboards..."></textarea>
+          <button class="sendBtn" id="sendBtn">Send</button>
         </div>
-        <div class="ihint">Enter = send &nbsp;·&nbsp; Shift+Enter = new line &nbsp;·&nbsp; mode: <span id="mlbl">auto</span></div>
+        <div class="meta">
+          <span>Enter to send · Shift+Enter for a new line</span>
+          <span>Mode: <code>assistant</code></span>
+        </div>
       </div>
     </div>
-  </div>
+  </section>
 </div>
 
 <script>
 const HARDCODED_KEY = '';
 const SYSTEM = `You are a helpful Metabase analytics assistant. Keep replies clear and simple.
 
+DATABASE "Resume DB"
 users: id, name, email, password, role, created_at, reset_token, reset_token_expiry
 resumes: id, user_id, title, summary, full_name, professional_title, email, phone, location, linkedin, website, nationality, date_of_birth, template_name, template_style, created_at, updated_at
 skills: id, resume_id, skill_name, level
@@ -335,272 +269,202 @@ certifications: id, resume_id, title, organization, issue_year
 education: id, resume_id
 experience: id, resume_id
 
-CRITICAL RULES:
-- skills, projects, certifications, education, experience have NO created_at column
-- To filter by date on these tables, always JOIN resumes table
-- Date filter SQL pattern:
-  SELECT COUNT(*) FROM skills s JOIN resumes r ON s.resume_id = r.id [[WHERE {{created_at}}]]
-  Variable: name=created_at, type=Field Filter, field=resumes.created_at
-- Always use MySQL syntax (DATE_FORMAT not TO_CHAR, use backticks for reserved words)
+Rules:
+- Use MySQL syntax.
+- If a table has no created_at, JOIN resumes when filtering by date.
+- Put SQL in triple backticks with sql tag.
+- Keep explanations short and practical.`;
 
-CURRENT DASHBOARD (already built):
-- 6 KPI cards: total_users(23), total_resumes(61), total_skills(47), total_projects(28), total_certificates(26), total_education(21)
-- User Growth Over Time chart (line)
-- Resume Creation Trend chart (line)
-
-USER PROGRESS:
-Knows: Metabase dashboards, KPI cards, charts, date filters, click behavior, Field Filter, [[WHERE {{var}}]] syntax, SELECT/FROM/COUNT/GROUP BY/ORDER BY/JOINs.
-Next to learn: WHERE/HAVING, subqueries, advanced chart types, BI concepts.
-
-RESPONSE FORMAT:
-- SQL queries: always in triple backticks with sql tag, ready to paste into Metabase
-- Metabase steps: short numbered list
-- Keep explanations simple — user is learning
-- End with: concept used + what to try next
-- For charts: always specify chart type, x-axis, y-axis`;
-
-let key = HARDCODED_KEY || localStorage.getItem('groq_key') || '';
-let groqHistory = [];
-let mode = 'auto';
+let apiKey = HARDCODED_KEY || localStorage.getItem('groq_key') || '';
+let history = [];
 let busy = false;
-
-const MODES = {
-  auto:'', sql:'[SQL MODE] ', chart:'[CHART MODE] ',
-  dashboard:'[DASHBOARD MODE] ', tutor:'[TUTOR MODE] ', fix:'[FIX MODE] '
-};
-
 let userScrolled = false;
 
-function scrollToBottom(){
-  const list = document.getElementById('msgs');
-  if(!list) return;
-  list.scrollTop = list.scrollHeight;
-  try { list.scrollTo({ top: list.scrollHeight, behavior: 'auto' }); } catch(e) {}
-}
-
-function showScrollButton(show){
-  const btn = document.getElementById('scrollBtn');
-  if(btn) btn.style.display = show ? 'block' : 'none';
-}
-
-window.onload = () => {
-  updateKeyUI();
-  loadMB();
-  addMsg('agent', `Ready. I know your Resume DB schema, your dashboard at **anandtannak-metabase.hf.space**, and your learning progress.\n\nAsk me anything or pick a quick prompt above.`);
-  const list = document.getElementById('msgs');
-  const btn = document.getElementById('scrollBtn');
-  if(list){
-    list.addEventListener('scroll', () => {
-      const atBottom = (list.scrollTop + list.clientHeight) >= (list.scrollHeight - 16);
-      userScrolled = !atBottom;
-      showScrollButton(userScrolled);
-    });
-  }
-  if(btn){
-    btn.addEventListener('click', () => {
-      userScrolled = false;
-      scrollToBottom();
-      showScrollButton(false);
-    });
-  }
+const els = {
+  msgs: document.getElementById('msgs'),
+  inp: document.getElementById('inp'),
+  send: document.getElementById('sendBtn'),
+  scrollBtn: document.getElementById('scrollBtn'),
+  statusDot: document.getElementById('statusDot'),
+  statusText: document.getElementById('statusText'),
+  mbUrl: document.getElementById('mbUrl'),
+  mbFrame: document.getElementById('mbFrame'),
+  loadBtn: document.getElementById('loadBtn'),
+  keyNotice: document.getElementById('keyNotice'),
+  frameNote: document.getElementById('frameNote'),
+  keyInp: document.getElementById('keyInp'),
+  keySave: document.getElementById('keySave')
 };
 
-function updateKeyUI(){
-  const notice = document.getElementById('keyNotice');
-  if(key){
-    setStatus(true);
-    notice.style.display = 'none';
-  } else {
-    setStatus(false);
-    notice.style.display = 'block';
-  }
+function setStatus(on, text){
+  els.statusDot.className = on ? 'dot on' : 'dot';
+  els.statusText.textContent = text || (on ? 'ready' : 'idle');
 }
-
-function saveKey(){
-  const v = document.getElementById('keyInp').value.trim();
-  if(!v) return;
-  key = v;
-  localStorage.setItem('groq_key', key);
-  updateKeyUI();
-  addMsg('agent','API key saved. You can now ask questions.');
+function escHtml(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function formatMessage(text){
+  const blocks = [];
+  text = text.replace(/```sql\n?([\s\S]*?)```/gi, (_, c) => { blocks.push(`<pre>${escHtml(c.trim())}</pre>`); return `%%BLOCK${blocks.length - 1}%%`; });
+  text = text.replace(/```\n?([\s\S]*?)```/g, (_, c) => { blocks.push(`<pre>${escHtml(c.trim())}</pre>`); return `%%BLOCK${blocks.length - 1}%%`; });
+  text = escHtml(text).replace(/\*\*([^*\n]+)\*\*/g, '<strong>$1</strong>').replace(/`([^`\n]+)`/g, '<code>$1</code>').replace(/\n/g, '<br>');
+  return text.replace(/%%BLOCK(\d+)%%/g, (_, i) => blocks[Number(i)]);
 }
-
-function setStatus(on){
-  document.getElementById('sdot').className='sdot'+(on?' on':'');
-  document.getElementById('stxt').textContent=on?'ready':'no key';
+function scrollToBottom(){
+  els.msgs.scrollTop = els.msgs.scrollHeight;
+  try{ els.msgs.scrollTo({ top: els.msgs.scrollHeight, behavior: 'auto' }); }catch(e){}
 }
+function showScrollButton(show){ els.scrollBtn.style.display = show ? 'block' : 'none'; }
 
-function loadMB(){
-  const url = document.getElementById('mbUrl').value.trim();
-  if(!url) return;
-  const frame = document.getElementById('mbFrame');
-  frame.src = url;
-  frame.style.display = 'block';
-  document.getElementById('mbPh').style.display = 'none';
-  document.getElementById('mbFail').style.display = 'block';
-}
-
-// Mode tabs
-document.querySelectorAll('.mtab').forEach(t=>{
-  t.onclick=()=>{
-    document.querySelectorAll('.mtab').forEach(x=>x.classList.remove('active'));
-    t.classList.add('active'); mode=t.dataset.m;
-    document.getElementById('mlbl').textContent=mode;
-  };
-});
-
-// Quick prompts
-document.querySelectorAll('.chip').forEach(c=>{
-  c.onclick=()=>{ document.getElementById('inp').value=c.dataset.q; send(); };
-});
-
-function addMsg(role, text){
-  const list = document.getElementById('msgs');
-  const w = document.createElement('div'); w.className = 'mw ' + role;
-  const lb = document.createElement('div'); lb.className = 'mlbl';
-  lb.textContent = role === 'user' ? 'you' : 'agent';
-  const b = document.createElement('div'); b.className = 'bub';
-  b.innerHTML = fmt(text);
-  b.querySelectorAll('pre').forEach(pre => {
+function addMessage(role, text){
+  const item = document.createElement('div');
+  item.className = `msg ${role}`;
+  item.innerHTML = `<div class="role">${role === 'user' ? 'you' : 'assistant'}</div><div class="bubble">${formatMessage(text)}</div>`;
+  item.querySelectorAll('pre').forEach(pre => {
     const btn = document.createElement('button');
-    btn.className = 'cpybtn'; btn.textContent = 'copy SQL';
-    btn.onclick = () => {
-      navigator.clipboard.writeText(pre.textContent);
-      btn.textContent = 'copied!';
-      setTimeout(()=>btn.textContent='copy SQL', 2000);
+    btn.className = 'copyBtn';
+    btn.textContent = 'copy SQL';
+    btn.onclick = async () => {
+      await navigator.clipboard.writeText(pre.textContent);
+      btn.textContent = 'copied';
+      setTimeout(() => btn.textContent = 'copy SQL', 1400);
     };
     pre.after(btn);
   });
-  w.appendChild(lb); w.appendChild(b); list.appendChild(w);
-  if(!userScrolled){
-    requestAnimationFrame(scrollToBottom);
-  } else {
-    showScrollButton(true);
-  }
+  els.msgs.appendChild(item);
+  if(!userScrolled) requestAnimationFrame(scrollToBottom);
+  else showScrollButton(true);
 }
 
-function showTyping(){
-  const list = document.getElementById('msgs');
-  const w = document.createElement('div'); w.id='typing'; w.className='tw';
-  const lb = document.createElement('div'); lb.className='mlbl'; lb.textContent='agent';
-  const b = document.createElement('div'); b.className='tbub';
-  b.innerHTML='<div class="dot"></div><div class="dot"></div><div class="dot"></div>';
-  w.appendChild(lb); w.appendChild(b); list.appendChild(w);
+function typingNode(){
+  const wrap = document.createElement('div');
+  wrap.className = 'msg assistant';
+  wrap.id = 'typing';
+  wrap.innerHTML = `<div class="role">assistant</div><div class="typing"><span></span><span></span><span></span></div>`;
+  els.msgs.appendChild(wrap);
   requestAnimationFrame(scrollToBottom);
 }
-function removeTyping(){ const t=document.getElementById('typing'); if(t)t.remove(); requestAnimationFrame(scrollToBottom); }
+function removeTyping(){ document.getElementById('typing')?.remove(); requestAnimationFrame(scrollToBottom); }
+
+function syncScrollState(){
+  const atBottom = (els.msgs.scrollTop + els.msgs.clientHeight) >= (els.msgs.scrollHeight - 16);
+  userScrolled = !atBottom;
+  showScrollButton(userScrolled);
+}
+
+function loadMetabase(){
+  let url = els.mbUrl.value.trim() || '/metabase/';
+  if(url.includes('anandtannak-metabase.hf.space')){
+    url = url.replace('https://anandtannak-metabase.hf.space', '/metabase');
+    url = url.replace('http://anandtannak-metabase.hf.space', '/metabase');
+  }
+  const qmatch = url.match(/\/question\/(\d+)/);
+  if(qmatch){
+    fetch(`/api/metabase/embed/question/${qmatch[1]}`)
+      .then(r => r.ok ? r.json() : Promise.reject())
+      .then(data => { els.mbFrame.src = data.embed_url || url; })
+      .catch(() => { els.mbFrame.src = url; });
+  } else {
+    els.mbFrame.src = url;
+  }
+  els.frameNote.style.display = 'block';
+}
 
 async function send(){
-  const inp = document.getElementById('inp');
-  const raw = inp.value.trim();
+  const raw = els.inp.value.trim();
   if(!raw || busy) return;
-  inp.value = ''; inp.style.height = 'auto';
-  busy = true; document.getElementById('sbtn').disabled = true;
-  addMsg('user', raw);
-
-  if(!key){
-    addMsg('agent', 'No API key set. Paste your Gemini key in the box above the chat.');
-    busy = false; document.getElementById('sbtn').disabled = false; return;
-  }
-
-  const prefix = MODES[mode] || '';
-  const userMsg = prefix + raw;
-  groqHistory.push({role:'user', content: userMsg});
-  showTyping();
-
-  try {
-    // Build messages for Groq (OpenAI-compatible format)
-    const messages = [
-      {role:'system', content: SYSTEM},
-      ...groqHistory
-    ];
-
+  if(!apiKey){ addMessage('assistant', 'No API key is set. Add your Groq key or save one locally in the browser.'); return; }
+  busy = true; els.send.disabled = true; els.inp.value = '';
+  addMessage('user', raw); typingNode();
+  const messages = [{ role: 'system', content: SYSTEM }, ...history, { role: 'user', content: raw }];
+  try{
     const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${key}`
-      },
-      body: JSON.stringify({
-        model: 'llama-3.3-70b-versatile',
-        messages: messages,
-        max_tokens: 1500,
-        temperature: 0.3
-      })
+      method:'POST',
+      headers:{ 'Content-Type':'application/json', 'Authorization':'Bearer ' + apiKey },
+      body: JSON.stringify({ model:'llama-3.3-70b-versatile', messages, temperature:0.3, max_tokens:1400 })
     });
     const data = await res.json();
     removeTyping();
     if(data.error){
-      addMsg('agent', `API error: ${data.error.message}\n\nCheck your Groq key at console.groq.com`);
-      groqHistory.pop();
+      addMessage('assistant', `API error: ${data.error.message}`);
     } else {
-      const reply = data.choices?.[0]?.message?.content || 'No response.';
-      groqHistory.push({role:'assistant', content: reply});
-      if(groqHistory.length > 24) groqHistory = groqHistory.slice(-24);
-      addMsg('agent', reply);
+      const reply = data?.choices?.[0]?.message?.content || 'No response.';
+      history.push({ role: 'user', content: raw }, { role: 'assistant', content: reply });
+      history = history.slice(-24);
+      addMessage('assistant', reply);
     }
-  } catch(e){
+  }catch(err){
     removeTyping();
-    addMsg('agent', `Network error: ${e.message}`);
-    groqHistory.pop();
+    addMessage('assistant', `Network error: ${err.message}`);
   }
-  busy = false; document.getElementById('sbtn').disabled = false;
+  busy = false; els.send.disabled = false;
 }
 
-function fmt(t){
-  return t
-    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
-    .replace(/```sql\n?([\s\S]*?)```/gi,(_,c)=>`<pre>${c.trim()}</pre>`)
-    .replace(/```\n?([\s\S]*?)```/g,(_,c)=>`<pre>${c.trim()}</pre>`)
-    .replace(/`([^`\n]+)`/g,'<code>$1</code>')
-    .replace(/\*\*([^*\n]+)\*\*/g,'<strong>$1</strong>')
-    .replace(/^####\s(.+)/gm,'<h4>$1</h4>')
-    .replace(/^[-•]\s(.+)/gm,'<li>$1</li>')
-    .replace(/^\d+\.\s(.+)/gm,'<li>$1</li>')
-    .replace(/\n/g,'<br>');
-}
-
-function onKey(e){
-  if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); send(); }
-}
-
-document.getElementById('inp').addEventListener('input', function(){
-  this.style.height = 'auto';
-  this.style.height = Math.min(this.scrollHeight, 90) + 'px';
-});
-
-// Drag to resize
-(() => {
-  const root = document.documentElement;
-  const splitter = document.getElementById('splitter');
-  let dragging = false;
-  let lpx = null;
-
-  function setLW(px){
-    const avail = window.innerWidth - splitter.offsetWidth;
-    const clamped = Math.min(Math.max(px, 340), avail - 300);
-    root.style.setProperty('--lw', clamped + 'px');
-    lpx = clamped;
-    localStorage.setItem('mb_lw', String(clamped));
+function updateKeyUI(){
+  if(apiKey){
+    setStatus(true, 'ready');
+    els.keyNotice.style.display = 'none';
+  } else {
+    setStatus(false, 'no key');
+    els.keyNotice.style.display = 'block';
   }
+}
 
-  const saved = Number(localStorage.getItem('mb_lw'));
-  if(saved) setLW(saved);
+function saveLocalKey(){
+  const value = els.keyInp.value.trim();
+  if(!value) return;
+  apiKey = value;
+  localStorage.setItem('groq_key', value);
+  updateKeyUI();
+  addMessage('assistant', 'API key saved. You can now ask questions.');
+}
 
-  splitter.addEventListener('pointerdown', e => {
-    dragging = true;
-    splitter.setPointerCapture(e.pointerId);
-    document.body.style.cursor = 'col-resize';
-    document.body.style.userSelect = 'none';
+window.onload = () => {
+  updateKeyUI();
+  loadMetabase();
+  addMessage('assistant', 'Ready. Ask me about SQL, charts, filters, or dashboard fixes.');
+  els.msgs.addEventListener('scroll', syncScrollState);
+  els.scrollBtn.addEventListener('click', () => {
+    userScrolled = false;
+    scrollToBottom();
+    showScrollButton(false);
   });
-  window.addEventListener('pointermove', e => { if(dragging) setLW(e.clientX); });
-  window.addEventListener('pointerup', () => {
-    dragging = false;
-    document.body.style.cursor = '';
-    document.body.style.userSelect = '';
+  document.querySelectorAll('.chip').forEach(btn => {
+    btn.addEventListener('click', () => {
+      els.inp.value = btn.dataset.q;
+      els.inp.dispatchEvent(new Event('input'));
+      send();
+    });
   });
-  window.addEventListener('resize', () => { if(lpx) setLW(lpx); });
-})();
+  els.loadBtn.addEventListener('click', loadMetabase);
+  els.send.addEventListener('click', send);
+  els.inp.addEventListener('keydown', (e) => { if(e.key === 'Enter' && !e.shiftKey){ e.preventDefault(); send(); } });
+  els.inp.addEventListener('input', function(){ this.style.height = 'auto'; this.style.height = Math.min(this.scrollHeight, 160) + 'px'; });
+  els.keySave.addEventListener('click', saveLocalKey);
+
+  (() => {
+    const splitter = document.getElementById('splitter');
+    let dragging = false;
+    let leftWidth = Number(localStorage.getItem('workspace_left_w') || '0');
+    function setLeftWidth(px){
+      const minLeft = 360;
+      const minRight = 340;
+      const max = window.innerWidth - splitter.offsetWidth - minRight;
+      const clamped = Math.min(Math.max(px, minLeft), max);
+      splitter.parentElement.style.gridTemplateColumns = `${clamped}px 10px 1fr`;
+      localStorage.setItem('workspace_left_w', String(clamped));
+      leftWidth = clamped;
+    }
+    if(leftWidth > 0) setLeftWidth(leftWidth);
+    splitter.addEventListener('pointerdown', e => {
+      dragging = true;
+      splitter.setPointerCapture(e.pointerId);
+      document.body.style.cursor = 'col-resize';
+      document.body.style.userSelect = 'none';
+    });
+    window.addEventListener('pointermove', e => { if(dragging) setLeftWidth(e.clientX); });
+    window.addEventListener('pointerup', () => { dragging = false; document.body.style.cursor = ''; document.body.style.userSelect = ''; });
+    window.addEventListener('resize', () => { if(leftWidth) setLeftWidth(leftWidth); });
+  })();
+};
 </script>
 </body>
 </html>
