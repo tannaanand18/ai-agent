@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Resume DB — Metabase AI Agent</title>
+<title>Metabase Analytics Workspace</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -136,6 +136,21 @@ iframe{width:100%;height:100%;border:none}
 .msgs::-webkit-scrollbar-thumb{background:var(--bg5);border-radius:2px}
 .msgs::-webkit-scrollbar-thumb:hover{background:var(--border2)}
 
+.scroll-btn{
+  display:none;
+  align-self:flex-end;
+  margin:0 11px 6px 0;
+  padding:4px 9px;
+  background:var(--gd);
+  border:1px solid rgba(61,214,140,.25);
+  border-radius:20px;
+  color:var(--green);
+  cursor:pointer;
+  font-family:var(--fm);
+  font-size:10px;
+}
+.scroll-btn:hover{background:rgba(61,214,140,.16)}
+
 .mw{
   display:flex;
   flex-direction:column;
@@ -217,11 +232,11 @@ iframe{width:100%;height:100%;border:none}
 <div class="shell">
   <!-- TOP BAR -->
   <div class="topbar">
-    <span class="logo">ResumeDB <span>/ Analytics</span></span>
+    <span class="logo">Metabase <span>/ Analytics</span></span>
     <div class="sep"></div>
     <div class="url-wrap">
       <span class="url-lbl">url://</span>
-      <input class="url-input" id="mbUrl" type="text" value="https://anandtannak-metabase.hf.space/" />
+      <input class="url-input" id="mbUrl" type="text" value="/metabase/" />
       <button class="tbtn tbtn-green" onclick="loadMB()">Load</button>
     </div>
     <div class="status">
@@ -252,8 +267,8 @@ iframe{width:100%;height:100%;border:none}
     <div class="agent">
       <div class="a-header">
         <div class="a-top">
-          <span class="a-name">AI Agent</span>
-          <span class="a-badge">Gemini Free</span>
+          <span class="a-name">Metabase Assistant</span>
+          <span class="a-badge">Groq</span>
         </div>
         <div class="a-pills">
           <span class="pill on">users</span><span class="pill on">resumes</span><span class="pill on">skills</span>
@@ -295,6 +310,7 @@ iframe{width:100%;height:100%;border:none}
       </div>
 
       <div class="msgs" id="msgs"></div>
+      <button class="scroll-btn" id="scrollBtn" title="Scroll to latest">↓</button>
 
       <div class="iarea">
         <div class="irow">
@@ -353,10 +369,40 @@ const MODES = {
   dashboard:'[DASHBOARD MODE] ', tutor:'[TUTOR MODE] ', fix:'[FIX MODE] '
 };
 
+let userScrolled = false;
+
+function scrollToBottom(){
+  const list = document.getElementById('msgs');
+  if(!list) return;
+  list.scrollTop = list.scrollHeight;
+  try { list.scrollTo({ top: list.scrollHeight, behavior: 'auto' }); } catch(e) {}
+}
+
+function showScrollButton(show){
+  const btn = document.getElementById('scrollBtn');
+  if(btn) btn.style.display = show ? 'block' : 'none';
+}
+
 window.onload = () => {
   updateKeyUI();
   loadMB();
   addMsg('agent', `Ready. I know your Resume DB schema, your dashboard at **anandtannak-metabase.hf.space**, and your learning progress.\n\nAsk me anything or pick a quick prompt above.`);
+  const list = document.getElementById('msgs');
+  const btn = document.getElementById('scrollBtn');
+  if(list){
+    list.addEventListener('scroll', () => {
+      const atBottom = (list.scrollTop + list.clientHeight) >= (list.scrollHeight - 16);
+      userScrolled = !atBottom;
+      showScrollButton(userScrolled);
+    });
+  }
+  if(btn){
+    btn.addEventListener('click', () => {
+      userScrolled = false;
+      scrollToBottom();
+      showScrollButton(false);
+    });
+  }
 };
 
 function updateKeyUI(){
@@ -426,10 +472,11 @@ function addMsg(role, text){
     pre.after(btn);
   });
   w.appendChild(lb); w.appendChild(b); list.appendChild(w);
-  // scroll to bottom
-  setTimeout(() => {
-  list.scrollTop = list.scrollHeight;
-}, 150);
+  if(!userScrolled){
+    requestAnimationFrame(scrollToBottom);
+  } else {
+    showScrollButton(true);
+  }
 }
 
 function showTyping(){
@@ -439,11 +486,9 @@ function showTyping(){
   const b = document.createElement('div'); b.className='tbub';
   b.innerHTML='<div class="dot"></div><div class="dot"></div><div class="dot"></div>';
   w.appendChild(lb); w.appendChild(b); list.appendChild(w);
-  setTimeout(() => {
-  list.scrollTop = list.scrollHeight;
-}, 150);
+  requestAnimationFrame(scrollToBottom);
 }
-function removeTyping(){ const t=document.getElementById('typing'); if(t)t.remove(); }
+function removeTyping(){ const t=document.getElementById('typing'); if(t)t.remove(); requestAnimationFrame(scrollToBottom); }
 
 async function send(){
   const inp = document.getElementById('inp');
